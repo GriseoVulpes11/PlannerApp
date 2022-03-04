@@ -11,4 +11,9 @@
       <PackageReference Include="System.Data.SQLite" Version="1.0.115.5" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Assets\img\settingsIMG.png" />
+      <Resource Include="Assets\img\settingsIMG.png" />
+    </ItemGroup>
+
 </Project>

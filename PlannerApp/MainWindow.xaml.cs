@@ -1,24 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Data.SQLite;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SQLite;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PlannerApp
 {
@@ -37,14 +23,46 @@ namespace PlannerApp
             
         }
 
-        private void UIElement_OnKeyDown(object sender, KeyEventArgs e)
+        private async Task WriteToFle(string sentString)
+        {
+             await File.WriteAllTextAsync("WriteText.txt", sentString);
+        }
+
+        private async void UIElement_OnKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
-                System.Windows.Controls.TextBox textbox = sender as System.Windows.Controls.TextBox;
+                TextBox? textbox = sender as TextBox;
                 string sen = textbox.Text;
-                textBlock1.Text = "You Entered: " + sen;
+                TitleBlock.Text = "You Entered: " + sen;
+                await WriteToFle(sen);
             }
+        }
+        
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            TextBox dynamicTextBox = new TextBox
+            {
+                Text = "Enter An Assignment",
+                Width = 200,
+                Height = 40,
+                HorizontalAlignment = HorizontalAlignment.Left
+            };
+            dynamicTextBox.KeyDown += UIElement_OnKeyDown;
+            dynamicTextBox.GotFocus += TextBox_GotFocus;
+            
+            StackPanel.Children.Remove(AddButton);
+            StackPanel.Children.Add(dynamicTextBox);
+            StackPanel.Children.Add(AddButton);
+        }
+
+
+        private void TextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox tb = (TextBox)sender;
+            tb.Text = string.Empty;
+            tb.GotFocus -= TextBox_GotFocus;
         }
     }
 }
