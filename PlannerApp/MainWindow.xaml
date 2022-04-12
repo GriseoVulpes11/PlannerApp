@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PlannerApp"
         mc:Ignorable="d"
-        Title="Planner" Height="700" Width="400">
+        Title="Planner" Height="700" Width="420">
     
     <Canvas Name="MainView">
         <DockPanel Width="400">
@@ -16,19 +16,17 @@
             </Button>
         </DockPanel>
         <StackPanel>
-           <DockPanel  Width="400">
+           <DockPanel  Width="400" Margin="10,10,10,10">
                <TextBlock FontSize="20" FontStyle="Italic" Name="TitleBlock" HorizontalAlignment="Center">
                    Welcome to Planner
                </TextBlock>
            </DockPanel>
-            <StackPanel>
-                 <StackPanel Name="StackPanel" Width="400" Orientation="Horizontal">
-                    <TextBox Name="StartBox"  GotFocus="TextBox_GotFocus" Width="200" Height="40" Text="Enter an Assignment" KeyDown="UIElement_OnKeyDown"  HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                    <CheckBox HorizontalAlignment="Left"></CheckBox>
-                </StackPanel> 
-                <Button Width="100" Height="25" HorizontalAlignment="Left" Click="ButtonBase_OnClick" Name="AddButton"> Add New</Button>
+            <StackPanel Name="AsinPannel">
+                
+                <Button Width="100" Height="25" HorizontalAlignment="Left" Click="ButtonBase_OnClick" Name="AddButton" Margin="10,0,10,10"> Add New</Button>
             </StackPanel>
         </StackPanel>
+        
     </Canvas>
    
 </Window>

@@ -8,6 +8,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="JObject" Version="1.0.0" />
+      <PackageReference Include="Json.Net" Version="1.0.33" />
+      <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="7.0.0-preview.2.22153.1" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0-preview.2.22152.2" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="7.0.0-preview.2.22152.2" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0-preview.2.22152.2" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0-preview.2.22152.2" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+      <PackageReference Include="Npgsql" Version="7.0.0-preview.2" />
       <PackageReference Include="System.Data.SQLite" Version="1.0.115.5" />
     </ItemGroup>
 
