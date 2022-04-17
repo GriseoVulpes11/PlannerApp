@@ -152,8 +152,7 @@ namespace PlannerApp
                         loaderDictionary.Add("text", grandTextBox!.Text);
 
                         DatePicker? grandDatePicker = stackParent.Children.OfType<DatePicker>().FirstOrDefault();
-                        loaderDictionary.Add("due",
-                            grandDatePicker!.DisplayDate.ToString(CultureInfo.InvariantCulture));
+                        loaderDictionary.Add("due", grandDatePicker!.SelectedDate.ToString());
 
                         CheckBox? grandCheckBox = stackParent.Children.OfType<CheckBox>().FirstOrDefault();
                         loaderDictionary.Add("check", grandCheckBox!.IsChecked.ToString()!);
