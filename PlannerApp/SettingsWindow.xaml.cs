@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using Newtonsoft.Json;
 
 namespace PlannerApp;
@@ -17,7 +18,7 @@ public partial class SettingsWindow
         InitializeComponent();
         LoadThemeJson();
         Title = "Settings";
-        foreach (var themeKey in ThemeDictonary.Keys)
+        foreach (string themeKey in ThemeDictonary.Keys)
         {
             ThemeTemplateBox.Items.Add(themeKey);
         }
@@ -28,45 +29,48 @@ public partial class SettingsWindow
 
     public class SettingsDesterilize
     {
-        public string themeBackgroundRgb { get; set; }
+        public string ThemeBackgroundRgb { get; set; }
         public string themeTextRgb { get; set; }
-        public string themehighlighRgb { get; set; }
-
+        public string themeHighlightRgb { get; set; }
         public string headerText { get; set; }
     }
 
-    private void fillSettingsData(string themeBackgroundRgb, string themeTextRgb, string themehighlighRgb,
+    public static void fillSettingsData(string themeBackgroundRgb, string themeTextRgb, string themeHighlightRgb,
         string headerText)
     {
-        SettingsDesterilize data = new SettingsDesterilize
+        if (headerText == "")
+        {
+            headerText = "welcome to Planner";
+        }
+        SettingsDesterilize data = new()
         {
             //header
             headerText = headerText,
             //theme colors
-            themeBackgroundRgb = themeBackgroundRgb,
+            ThemeBackgroundRgb = themeBackgroundRgb,
             themeTextRgb = themeTextRgb,
-            themehighlighRgb = themehighlighRgb
+            themeHighlightRgb = themeHighlightRgb
         };
 
         string jsonData = JsonConvert.SerializeObject(data);
-        var fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        string fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "PlannerSettings.json");
-        using StreamWriter outputFile = new StreamWriter(fileName);
+        using StreamWriter outputFile = new(fileName);
         outputFile.WriteLine(jsonData);
     }
 
-    private void FillThemeJson()
+    public static void FillThemeJson()
     {
         string themeListJson = JsonConvert.SerializeObject(ThemeDictonary);
-        var fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ThemesStorage.json");
-        using StreamWriter outputFile = new StreamWriter(fileName);
+        string fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ThemesStorage.json");
+        using StreamWriter outputFile = new(fileName);
         outputFile.WriteLine(themeListJson);
     }
 
     private void LoadThemeJson()
     {
-        var fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ThemesStorage.json");
-        StreamReader reader = new StreamReader(fileName);
+        string fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ThemesStorage.json");
+        StreamReader reader = new(fileName);
         string themesJson = reader.ReadToEnd();
         reader.Close();
         var jDeserializeObject = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string,string>>>(themesJson);
@@ -78,7 +82,7 @@ public partial class SettingsWindow
             }
     }
     
-    public Dictionary<string, Dictionary<string, string>> ThemeDictonary =
+    public static Dictionary<string, Dictionary<string, string>> ThemeDictonary =
         new()
         {
             {
@@ -273,6 +277,7 @@ public partial class SettingsWindow
         userChosenHighlightColor.Children.Add(userChosenHighlightColorB);
 
         mainStackPanel.Children.Add(userChosenHighlightColor);
+        
         TextBox userChosenThemeName = new TextBox
         {
             Name = "userChosenThemeName",
@@ -282,8 +287,8 @@ public partial class SettingsWindow
             HorizontalAlignment = HorizontalAlignment.Left
         };
         userChosenThemeName.GotFocus += TextBox_GotFocus;
+        RegisterName("userChosenThemeName", userChosenThemeName);
         mainStackPanel.Children.Add(userChosenThemeName);
-
         Button applyThemeButton = new Button
         {
             Content = "Add new theme",
@@ -299,12 +304,12 @@ public partial class SettingsWindow
 
     private bool CheckCommonEntryErrors(int entry)
     {
-        TextBlock emptyValueError = new TextBlock
+        TextBlock emptyValueError = new()
         {
             Text = "You left a RGB value empty or is negative",
             Foreground = new SolidColorBrush(Colors.Crimson)
         };
-        TextBlock valueTooLargeError = new TextBlock
+        TextBlock valueTooLargeError = new()
         {
             Text = "A value Entered was too large",
             Foreground = new SolidColorBrush(Colors.Crimson)
@@ -322,17 +327,19 @@ public partial class SettingsWindow
         }
         return true;
     }
+    
+    
     private void ApplyThemeButtonOnClick(object sender, RoutedEventArgs e)
     {
         bool continueProcess = true;
         StackPanel customThemeStackPanel = (StackPanel)FindName("CustomThemeStackPanel")!;
-        Dictionary<string, string> customThemeTemporaryDictionary = new Dictionary<string, string>();
-        List<string> customThemeBackgroundColorList = new List<string>();
-        List<string> customThemeTextColorList = new List<string>();
-        List<string> customThemeHighlightColorList = new List<string>();
-        string customThemeName = "theme" + ThemeDictonary.Count.ToString();
-        MessageBox.Show(customThemeStackPanel.Name);
-        List<string> variableNameList = new List<string>()
+        Dictionary<string, string> customThemeTemporaryDictionary = new();
+        List<string> customThemeBackgroundColorList = new();
+        List<string> customThemeTextColorList = new();
+        List<string> customThemeHighlightColorList = new();
+        string customThemeNameDefault = "theme" + ThemeDictonary.Count + 1;
+        string customThemeName = "";
+        List<string> variableNameList = new()
         {
             "UserChosenBackgroundColorR",
             "UserChosenBackgroundColorG",
@@ -345,25 +352,44 @@ public partial class SettingsWindow
             "userChosenHighlightColorB"
         };
 
-        TextBlock nameAlreadyExistsError = new TextBlock
+        TextBlock nameAlreadyExistsError = new()
         {
             Text = "This theme name already exists",
             Foreground = new SolidColorBrush(Colors.Crimson)
         };
-        TextBlock emptyValueError = new TextBlock
+        TextBlock emptyValueError = new()
         {
             Text = "You left a RGB value empty or is negative",
             Foreground = new SolidColorBrush(Colors.Crimson)
         };
         foreach (var child in customThemeStackPanel.Children)
         {
+            if(child is TextBox)
+            {
+                TextBox childTextBox = (child as TextBox)!; 
+                if (childTextBox.Name == "userChosenThemeName")
+                {
+                    MessageBox.Show("It runs");
+                    customThemeName = childTextBox.Text;
+                    if (string.IsNullOrEmpty(customThemeName))
+                    {
+                        customThemeName = customThemeNameDefault;
+                    }
+                    if (ThemeDictonary.ContainsKey(customThemeName))
+                    {
+                        
+                        MainSettingsStackPanel.Children.Add(nameAlreadyExistsError);
+                        continueProcess = false;
+                    }
+                }
+            }
             if (child is DockPanel)
             {
                 DockPanel dockPanelChild = (child as DockPanel)!;
                 foreach (var grandchild in dockPanelChild.Children)
                 {
                     TextBox childTextBox = (grandchild as TextBox)!;
-                    if (variableNameList.Contains(childTextBox.Name.ToString()))
+                    if (variableNameList.Contains(childTextBox.Name))
                     {
                         try
                         {
@@ -373,11 +399,11 @@ public partial class SettingsWindow
                         {
                             MainSettingsStackPanel.Children.Add(emptyValueError);
                             return;
-                        };
+                        }
                         string childTextBoxName = childTextBox.Name;
                         if (variableNameList.IndexOf(childTextBoxName) < 3)
                         {
-                            if (CheckCommonEntryErrors(Int32.Parse(childTextBox.Text)))
+                            if (CheckCommonEntryErrors(int.Parse(childTextBox.Text)))
                             {
                                 customThemeBackgroundColorList.Add(childTextBox.Text);
                             }
@@ -388,7 +414,7 @@ public partial class SettingsWindow
                         }
                         else if (variableNameList.IndexOf(childTextBoxName) < 6)
                         {
-                            if (CheckCommonEntryErrors(Int32.Parse(childTextBox.Text)))
+                            if (CheckCommonEntryErrors(int.Parse(childTextBox.Text)))
                             {
                                 customThemeTextColorList.Add(childTextBox.Text);
                             }
@@ -410,43 +436,41 @@ public partial class SettingsWindow
                         }
                     }
                 }
-                if(child is TextBox)
-                {
-                    TextBox childTextBox = (child as TextBox)!;
-                    if (childTextBox.Name == "userChosenThemeName")
-                    {
-                        if (childTextBox.Text != "")
-                        {
-                            customThemeName = childTextBox.Text;
-                        }
-
-                        if (ThemeDictonary.ContainsKey(customThemeName))
-                        {
-                        
-                            MainSettingsStackPanel.Children.Add(nameAlreadyExistsError);
-                            continueProcess = false;
-                        }
-                    }
-                }
-                
             }
         }
 
-        if (continueProcess)
+        if (!continueProcess) return;
+        string customThemeBackgroundColorString = String.Join(",", customThemeBackgroundColorList.ToArray());
+        customThemeTemporaryDictionary.Add("themeBackgroundRgb", customThemeBackgroundColorString);
+
+        string customThemeTextColorString = String.Join(",", customThemeTextColorList.ToArray());
+        customThemeTemporaryDictionary.Add("themeTextRgb", customThemeTextColorString);
+
+        string customThemeHighlightColorString = String.Join(",", customThemeHighlightColorList.ToArray());
+        customThemeTemporaryDictionary.Add("themeHighlightRgb", customThemeHighlightColorString);
+
+        ThemeDictonary.Add(customThemeName, customThemeTemporaryDictionary);
+        MessageBox.Show("Restart App after applying settings for changes to apply");
+        FillThemeJson();
+    }
+
+    private void DeleteTheme_OnClick(object sender, RoutedEventArgs e)
+    {
+        string themeToRemove = ThemeTemplateBox.Text;
+        if (themeToRemove == "Dark Tan")
         {
-            string customThemeBackgroundColorString = String.Join(",", customThemeBackgroundColorList.ToArray());
-            customThemeTemporaryDictionary.Add("themeBackgroundRgb", customThemeBackgroundColorString);
-
-            string customThemeTextColorString = String.Join(",", customThemeTextColorList.ToArray());
-            customThemeTemporaryDictionary.Add("themeTextRgb", customThemeTextColorString);
-
-            string customThemeHighlightColorString = String.Join(",", customThemeHighlightColorList.ToArray());
-            customThemeTemporaryDictionary.Add("themeHighlightRgb", customThemeHighlightColorString);
-
-            ThemeDictonary.Add(customThemeName, customThemeTemporaryDictionary);
-            MessageBox.Show(ThemeDictonary.Values.ToString());
-            FillThemeJson();
+            MessageBox.Show("You cannot remove the default theme");
+            return;
         }
+
+        if (string.IsNullOrEmpty(ThemeTemplateBox.Text))
+        {
+            MessageBox.Show("You must select the item you want to remove");
+            return;
+        }
+        ThemeDictonary.Remove(ThemeTemplateBox.Text);
+        MessageBox.Show("The Theme " + themeToRemove + "Has been removed");
+        FillThemeJson();
     }
 }
 

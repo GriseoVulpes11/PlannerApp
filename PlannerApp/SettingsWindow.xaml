@@ -11,7 +11,8 @@
             <TextBlock Text="Theme" Margin="10,10,0,0"></TextBlock>
             <DockPanel>
             <ComboBox Name = "ThemeTemplateBox"  Width="200" Height="30" Margin="10,0,0,0"></ComboBox>
-                <Button Name="customTheme" Click="CustomTheme_OnClick">Custom Theme</Button>
+                <Button Name="customTheme" Click="CustomTheme_OnClick" Height="30">Custom Theme</Button>
+                <Button Name="deleteTheme" Click="DeleteTheme_OnClick" Margin="10" Height="30">Remove</Button>
             </DockPanel>
             <TextBlock Text ="Change Header Text" Margin="10,10,0,0"></TextBlock>
             <TextBox Name="HeaderChangeTextBox" Text ="" Margin="10,0,0,0"></TextBox>

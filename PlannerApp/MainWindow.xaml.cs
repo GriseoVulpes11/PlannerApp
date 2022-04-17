@@ -9,6 +9,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using static PlannerApp.SettingsWindow;
+
 
 namespace PlannerApp
 {
@@ -17,12 +19,28 @@ namespace PlannerApp
     /// </summary>
     public partial class MainWindow
     {
+        // ReSharper disable once PublicConstructorInAbstractClass
         public MainWindow()
         {
             InitializeComponent();
+            //Checks if PlannerSettings.Json exists
+            string fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "PlannerSettings.json");
+            if (File.Exists(fileName) == false)
+            {
+                fillSettingsData("50,50,50","200,171,131","40,40,40","Welcome to Planner");
+            }
+            //Checks if ThemesStorage.Json exists 
+            string themesStorageFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ThemesStorage.json");
+            if (File.Exists(themesStorageFileName) == false)
+            {
+                FillThemeJson();
+            }
             
-            Dictionary<int, Dictionary<string, string>> jsonDictonary = LoadUserDataJson();
-            foreach(var item in jsonDictonary.Values)
+            
+            
+            Dictionary<int, Dictionary<string, string>> jsonDictionary = LoadUserDataJson();
+            foreach(Dictionary<string, string> item in jsonDictionary.Values)
             {
                 bool checker = Convert.ToBoolean(item["check"]);
                 CreateAssignmentBox(item["text"], item["due"], checker);
@@ -33,7 +51,7 @@ namespace PlannerApp
         private void ApplyThemesAndHeader()
         {
             Dictionary<string, string?> settingsData = LoadSettingsDataJson();
-            ColorBrushed theme = themeFormating(settingsData);
+            ColorBrushed theme = ThemeFormatting(settingsData!);
                 
             MainView.Background =  theme.BackgroundColorBrush;
             
@@ -59,45 +77,94 @@ namespace PlannerApp
             public SolidColorBrush? HighlightedBackgroundColorBrush { get; set; }
         }
 
-        private ColorBrushed themeFormating(Dictionary<string, string?> unformatedDictonary)
+        private ColorBrushed ThemeFormatting(Dictionary<string, string> unformattedDictionary)
         {
-            string[] themeBackgroundRgb = unformatedDictonary["themeBackgroundRgb"]!.Split(",");
-            string[] themeTextRgb = unformatedDictonary["themeTextRgb"]!.Split(",");
-            string[] themeHighlightRgb = unformatedDictonary["themehighlighRgb"]!.Split(",");
+            string[] themeBackgroundRgb = unformattedDictionary["themeBackgroundRgb"].Split(",");
+            string[] themeTextRgb = unformattedDictionary["themeTextRgb"].Split(",");
+            string[] themeHighlightRgb = unformattedDictionary["themeHighlightRgb"].Split(",");
             
             ColorBrushed theme = new ColorBrushed();
-            theme.BackgroundColorBrush = new SolidColorBrush(Color.FromRgb((byte)Int16.Parse(themeBackgroundRgb[0]), (byte)Int16.Parse(themeBackgroundRgb[1]), (byte)Int16.Parse(themeBackgroundRgb[2])));
-            theme.TextColorBrush = new SolidColorBrush(Color.FromRgb((byte)Int16.Parse(themeTextRgb[0]), (byte)Int16.Parse(themeTextRgb[1]), (byte)Int16.Parse(themeTextRgb[2])));
-            theme.HighlightedBackgroundColorBrush = new SolidColorBrush(Color.FromRgb((byte)Int16.Parse(themeHighlightRgb[0]),(byte)Int16.Parse(themeHighlightRgb[1]),(byte)Int16.Parse(themeHighlightRgb[2])));
+            try
+            {
 
-            return theme;
+                theme.BackgroundColorBrush = new SolidColorBrush(Color.FromRgb((byte)Int16.Parse(themeBackgroundRgb[0]),
+                    (byte)Int16.Parse(themeBackgroundRgb[1]), (byte)Int16.Parse(themeBackgroundRgb[2])));
+                theme.TextColorBrush = new SolidColorBrush(Color.FromRgb((byte)Int16.Parse(themeTextRgb[0]),
+                    (byte)Int16.Parse(themeTextRgb[1]), (byte)Int16.Parse(themeTextRgb[2])));
+                theme.HighlightedBackgroundColorBrush = new SolidColorBrush(Color.FromRgb(
+                    (byte)Int16.Parse(themeHighlightRgb[0]), (byte)Int16.Parse(themeHighlightRgb[1]),
+                    (byte)Int16.Parse(themeHighlightRgb[2])));
+
+                return theme;
+            }
+            catch (FormatException)
+            {
+                string fileNameLoad = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ThemesStorage.json");
+                StreamReader reader = new(fileNameLoad);
+                string themesJson = reader.ReadToEnd();
+                reader.Close();
+                var jDeserializeObject = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string,string>>>(themesJson);
+                Dictionary<string, Dictionary<string, string>> themeDictionary = new();
+                if (jDeserializeObject != null)
+                    foreach (var Theme in jDeserializeObject)
+                    {
+                        if (Theme.Value != unformattedDictionary)
+                        {
+                            themeDictionary.Add(Theme.Key, Theme.Value);
+                        }
+                    }
+
+                ColorBrushed  themeColorBrushed = ThemeFormatting(themeDictionary["Dark Tan"]);
+                
+                SettingsDesterilize data = new()
+                {
+                    //header
+                    HeaderText = TitleBlock.Text,
+                    //theme colors
+                    ThemeBackgroundRgb = "50,50,50",
+                    ThemeTextRgb = "200,171,131",
+                    ThemeHighlightRgb = "40,40,40"
+                };
+
+                string jsonData = JsonConvert.SerializeObject(data);
+                string fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "PlannerSettings.json");
+                using StreamWriter outputFile = new(fileName);
+                outputFile.WriteLine(jsonData);
+                return themeColorBrushed;
+            }
+            
         }
 
         private void SaveData()
         {
-            Dictionary<int, Dictionary<string, string?>> fullJsonDictonary = new Dictionary<int, Dictionary<string, string?>>();
+            Dictionary<int, Dictionary<string, string?>> fullJsonDictionary = new();
             int iterNum = 0;
             foreach (object child in AsinPannel.Children)
             {
                 if (child is StackPanel)
                 {
-                    Dictionary<string, string?> loaderDictionary = new Dictionary<string, string?>();
-                    StackPanel? stackParent = child as StackPanel;
-                    
-                    TextBox? grandTextBox = stackParent?.Children.OfType<TextBox>().FirstOrDefault();
-                    loaderDictionary.Add("text",grandTextBox?.Text);
-                        
-                    DatePicker? grandDatePicker = stackParent?.Children.OfType<DatePicker>().FirstOrDefault();
-                    loaderDictionary.Add("due",grandDatePicker?.DisplayDate.ToString(CultureInfo.InvariantCulture));
-                        
-                    CheckBox? grandCheckBox = stackParent?.Children.OfType<CheckBox>().FirstOrDefault();
-                    loaderDictionary.Add("check",grandCheckBox?.IsChecked.ToString());
-                    
-                    fullJsonDictonary.Add(iterNum,loaderDictionary);
-                    iterNum =  + 1;
+                    StackPanel stackParent = (child as StackPanel);
+                    {
+                        Dictionary<string, string> loaderDictionary = new();
+
+                        TextBox? grandTextBox = stackParent.Children.OfType<TextBox>().FirstOrDefault();
+                        loaderDictionary.Add("text", grandTextBox!.Text);
+
+                        DatePicker? grandDatePicker = stackParent.Children.OfType<DatePicker>().FirstOrDefault();
+                        loaderDictionary.Add("due",
+                            grandDatePicker!.DisplayDate.ToString(CultureInfo.InvariantCulture));
+
+                        CheckBox? grandCheckBox = stackParent.Children.OfType<CheckBox>().FirstOrDefault();
+                        loaderDictionary.Add("check", grandCheckBox!.IsChecked.ToString()!);
+
+                        fullJsonDictionary.Add(iterNum, loaderDictionary!);
+                        iterNum = +1;
+                    }
                 }
             }
-            FillUserJson(fullJsonDictonary);
+
+            FillUserJson(fullJsonDictionary);
 
         }
         
@@ -116,6 +183,7 @@ namespace PlannerApp
         {
             public int Amm { get; set; }
         }
+       
         public class JsonDataBody : IJsonSterilizedData
         {
             public string? Text { get; set; }
@@ -123,34 +191,22 @@ namespace PlannerApp
             public bool Check { get; set; }
         }
 
-        private void FillUserJson(Dictionary<int, Dictionary<string, string?>> newData = null!)
+        private static void FillUserJson(Dictionary<int, Dictionary<string, string?>> newData = null)
         {
-            List<IJsonSterilizedData> data = new List<IJsonSterilizedData>();
-                
-                data.Add(new JsonDataNum
+            List<IJsonSterilizedData> data = new()
+            {
+                new JsonDataNum
                 {
                     Amm = newData.Count
-                });
-                
-
-                foreach (var item in newData.Values)
-                {
-                    data.Add(new JsonDataBody
-                    {
-                        Text = item["text"],
-                        Due = item["due"],
-                        Check = Convert.ToBoolean(item["check"])
-                    });
                 }
+            };
+            data.AddRange(newData.Values.Select(item => new JsonDataBody { Text = item["text"], Due = item["due"], Check = Convert.ToBoolean(item["check"]) }));
 
-                string userJsonData = JsonConvert.SerializeObject(data);
-                var fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PermStore.json");
-                using (StreamWriter outputFile = new StreamWriter(fileName))
-                {
-                    outputFile.WriteLine(userJsonData);
-                }
 
-            
+            string userJsonData = JsonConvert.SerializeObject(data);
+            string fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PermStore.json");
+            using StreamWriter outputFile = new(fileName);
+            outputFile.WriteLine(userJsonData);
         }
         public class JsonDeserialize
         {
@@ -160,60 +216,84 @@ namespace PlannerApp
             public bool? Check { get; set; }
         }
 
-        private Dictionary<int, Dictionary<string, string>> LoadUserDataJson()
+        private static Dictionary<int, Dictionary<string, string>> LoadUserDataJson()
         {
-            var fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PermStore.json");
-            StreamReader r = new StreamReader(fileName);
-            string json = r.ReadToEnd();
-            r.Close();
-            Dictionary<int, Dictionary<string,string>> jsonData = new Dictionary<int, Dictionary<string,string>>();
-            JArray obj = JsonConvert.DeserializeObject(json) as JArray;
-            List<JsonDeserialize> jsonDeserializes = JsonConvert.DeserializeObject<List<JsonDeserialize>>(obj.ToString());
-            if (jsonDeserializes != null)
+            string fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "PermStore.json");
+            if (File.Exists(fileName))
             {
-                int rangeIterable = jsonDeserializes[0].Amm;
-
-                foreach (var value in Enumerable.Range(1, rangeIterable))
+                StreamReader r = new(fileName);
+                string json = r.ReadToEnd();
+                r.Close();
+                Dictionary<int, Dictionary<string, string>> jsonData = new();
+                JArray obj = JsonConvert.DeserializeObject(json) as JArray ?? throw new InvalidOperationException();
+                List<JsonDeserialize> jsonDeserializes =
+                    JsonConvert.DeserializeObject<List<JsonDeserialize>>(obj.ToString())!;
+                if (jsonDeserializes != null)
                 {
-                    Dictionary<string, string?> temporaryDictionary = new Dictionary<string, string?>();
-                    var jsonIter = jsonDeserializes[value];
-                    temporaryDictionary.Add("text", jsonIter.Text);
-                    temporaryDictionary.Add("due", jsonIter.Due);
-                    temporaryDictionary.Add("check",jsonIter.Check.ToString());
-                    jsonData.Add(value, temporaryDictionary!);
-                }
-            }
+                    int rangeIterable = jsonDeserializes[0].Amm;
 
-            return jsonData;
+                    foreach (int value in Enumerable.Range(1, rangeIterable))
+                    {
+                        Dictionary<string, string?> temporaryDictionary = new();
+                        JsonDeserialize jsonIter = jsonDeserializes[value];
+                        temporaryDictionary.Add("text", jsonIter.Text);
+                        temporaryDictionary.Add("due", jsonIter.Due);
+                        temporaryDictionary.Add("check", jsonIter.Check.ToString());
+                        jsonData.Add(value, temporaryDictionary!);
+                    }
+                }
+
+                return jsonData;
+            }
+            else
+            {
+                Dictionary<int, Dictionary<string, string>> newUserDictonary =
+                    new()
+                    {
+                        {
+                            1,
+                            new Dictionary<string, string>
+                            {
+                                { "text", "Enter An Assignment" },
+                                { "due", "04/16/2022 00:00:00" },
+                                { "check", "false" }
+                            }
+                        }
+                    };
+
+                FillUserJson(newUserDictonary);
+                return newUserDictonary;
+            }
         }
 
         public class SettingsDesterilize
         {
-            public string? ThemeBackgroundRgb { get; set; }
-            public string? ThemeTextRgb { get; set; }
-            public string? ThemehighlighRgb { get; set; }
+            public string? ThemeBackgroundRgb { get; init; }
+            public string? ThemeTextRgb { get; init; }
+            public string? ThemeHighlightRgb { get; init; }
             
-            public string? HeaderText { get; set; }
+            public string? HeaderText { get; init; }
         }
-        private Dictionary<string, string?> LoadSettingsDataJson()
+        private static Dictionary<string, string?> LoadSettingsDataJson()
         {
-            var fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            string fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "PlannerSettings.json");
-            StreamReader r = new StreamReader(fileName);
+            StreamReader r = new(fileName);
             string json = r.ReadToEnd();
             r.Close();
-            Dictionary<string, string?> settingsLoad = new Dictionary<string, string?>();
+            Dictionary<string, string?> settingsLoad = new();
             JObject? settingsObject = JsonConvert.DeserializeObject(json) as JObject;
             
             SettingsDesterilize settingsDeserializes = JsonConvert.DeserializeObject<SettingsDesterilize>(settingsObject?.ToString()!)!;
-            string? themeBackgroundRgb = settingsDeserializes?.ThemeBackgroundRgb;
-            string? themeTextRgb = settingsDeserializes?.ThemeTextRgb;
-            string? themehighlighRgb = settingsDeserializes?.ThemehighlighRgb;
+            string? themeBackgroundRgb = settingsDeserializes.ThemeBackgroundRgb;
+            string? themeTextRgb = settingsDeserializes.ThemeTextRgb;
+            string? themeHighlightRgb = settingsDeserializes.ThemeHighlightRgb;
             
-            string? headerText = settingsDeserializes!.HeaderText;
+            string? headerText = settingsDeserializes.HeaderText;
             settingsLoad.Add("themeBackgroundRgb", themeBackgroundRgb);
             settingsLoad.Add("themeTextRgb",themeTextRgb);
-            settingsLoad.Add("themehighlighRgb",themehighlighRgb);
+            settingsLoad.Add("themeHighlightRgb",themeHighlightRgb);
             
             
             settingsLoad.Add("headerText", headerText);
@@ -226,10 +306,10 @@ namespace PlannerApp
         private void CreateAssignmentBox(string? boxFillText = null,string? datePicker = null, bool check = false )
         {
             Dictionary<string, string?> settingsData = LoadSettingsDataJson();
-            ColorBrushed theme = themeFormating(settingsData);
+            ColorBrushed theme = ThemeFormatting(settingsData!);
             
             StackPanel assignmentStackPanel = AsinPannel;
-            StackPanel dynamicStackPanel = new StackPanel()
+            StackPanel dynamicStackPanel = new()
             {
                 Width = 400,
                 Orientation = Orientation.Horizontal,
@@ -239,7 +319,7 @@ namespace PlannerApp
 
             
             
-            TextBox dynamicTextBox = new TextBox
+            TextBox dynamicTextBox = new()
             {
                 Width = 200,
                 Height = 25,
@@ -267,7 +347,7 @@ namespace PlannerApp
             
             dynamicStackPanel.Children.Add(dynamicTextBox);
 
-            DatePicker dynamicDatePicker = new DatePicker()
+            DatePicker dynamicDatePicker = new()
             {
                 Height = 25,
                 Width = 115,
@@ -285,7 +365,7 @@ namespace PlannerApp
             
             dynamicStackPanel.Children.Add(dynamicDatePicker);
 
-            CheckBox dynamicCheckBox = new CheckBox()
+            CheckBox dynamicCheckBox = new()
             {
                 HorizontalAlignment = HorizontalAlignment.Left,
                 LayoutTransform = new ScaleTransform(2.1,2.1),
@@ -338,7 +418,7 @@ namespace PlannerApp
 
         private void ButtonBaseSettingsOnClick(object sender, RoutedEventArgs e)
         {
-            SettingsWindow subWindow = new SettingsWindow();
+            SettingsWindow subWindow = new();
             subWindow.Show();
         }
 
@@ -348,7 +428,3 @@ namespace PlannerApp
         }
     }
 }
-
-
-
-
