@@ -25,4 +25,9 @@
       <Resource Include="Assets\img\settingsIMG.png" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Assets\img\icon.png" />
+      <Resource Include="Assets\img\icon.png" />
+    </ItemGroup>
+
 </Project>

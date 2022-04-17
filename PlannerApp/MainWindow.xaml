@@ -5,11 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PlannerApp"
         mc:Ignorable="d"
+        Icon="Assets/img/icon.png"
         Title="Planner" Height="700" Width="420">
     
     <Canvas Name="MainView">
         <DockPanel Width="400">
-            <Button Width="40" Height="40" HorizontalAlignment="Right" VerticalAlignment="Top" >
+            <Button Name="settingsButton" Width="40" Height="40" HorizontalAlignment="Right" VerticalAlignment="Top" Click="ButtonBaseSettingsOnClick" BorderThickness="0"  
+                    Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" >
                 <DockPanel>
                     <Image Source="Assets/img/settingsIMG.png"></Image>
                 </DockPanel>
@@ -22,8 +24,10 @@
                </TextBlock>
            </DockPanel>
             <StackPanel Name="AsinPannel">
-                
-                <Button Width="100" Height="25" HorizontalAlignment="Left" Click="ButtonBase_OnClick" Name="AddButton" Margin="10,0,10,10"> Add New</Button>
+                <DockPanel Name="MaluMableDockpanel">
+                <Button Width="100" Height="25" HorizontalAlignment="Left" Click="AddButtonBaseOnClick" Name="AddButton" Margin="10,0,10,10"> Add New</Button>
+                    <Button Width="100" Height="25" HorizontalAlignment="Left"  Name="SaveButton" Margin="10,0,10,10" Click="SaveButton_OnClick">Save</Button>
+                </DockPanel>
             </StackPanel>
         </StackPanel>
         

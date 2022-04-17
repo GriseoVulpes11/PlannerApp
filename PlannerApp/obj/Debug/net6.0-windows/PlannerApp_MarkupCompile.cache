@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET6_0;NETCOREAPP
 C:\Users\BCoop\RiderProjects\PlannerApp\PlannerApp\App.xaml
-11407045341
+3-857962622
 
-3-1233169557
+6-1293376731
 216410032473
-MainWindow.xaml;
+MainWindow.xaml;SettingsWindow.xaml;ThemeMaker.xaml;
 
 False
 

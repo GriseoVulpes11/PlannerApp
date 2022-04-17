@@ -1,0 +1,34 @@
+﻿<Window x:Class="PlannerApp.ThemeMaker"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:local="clr-namespace:PlannerApp"
+        mc:Ignorable="d"
+        Title="ThemeMaker" Height="260" Width="250">
+    
+    <StackPanel>
+        <TextBlock Text="Input colors you want in RGB format"  Margin="10,10,0,0"></TextBlock>
+        <TextBlock Text="Choose a background color"  Margin="10,10,0,0"></TextBlock>
+        <DockPanel>
+            <TextBox Name="UserChosenBackgroundColorR" Text="Red" Margin="10,10,0,0" Width="40" HorizontalAlignment="Left"></TextBox>
+            <TextBox Name="UserChosenBackgroundColorG" Text="Green" Margin="10,10,0,0" Width="40" HorizontalAlignment="Left"></TextBox>
+            <TextBox Name="UserChosenBackgroundColorB" Text="Blue" Margin="10,10,0,0" Width="40" HorizontalAlignment="Left"></TextBox>
+        </DockPanel>
+        <TextBlock Text="Choose a text color"  Margin="10,10,0,0"></TextBlock>
+        <DockPanel>
+            <TextBox Name="UserChosenTextColorR" Text="Red" Margin="10,10,0,0" Width="40" HorizontalAlignment="Left"></TextBox>
+            <TextBox Name="UserChosenTextColorG" Text="Green" Margin="10,10,0,0" Width="40" HorizontalAlignment="Left"></TextBox>
+            <TextBox Name="UserChosenTextColorB" Text="Blue" Margin="10,10,0,0" Width="40" HorizontalAlignment="Left"></TextBox>
+        </DockPanel>
+        <TextBlock Text="Choose a highlight color"  Margin="10,10,0,0"></TextBlock>
+        <DockPanel>
+            <TextBox Name="UserChosenHighlightColorR" Text="Red" Margin="10,10,0,0" Width="40" HorizontalAlignment="Left"></TextBox>
+            <TextBox Name="UserChosenHighlightColorG" Text="Green" Margin="10,10,0,0" Width="40" HorizontalAlignment="Left"></TextBox>
+            <TextBox Name="UserChosenHighlightColorB" Text="Blue" Margin="10,10,0,0" Width="40" HorizontalAlignment="Left"></TextBox>
+        </DockPanel>
+        <TextBox Name ="ThemeName" Text="Theme Name"  Margin="10,10,0,0" Width="200" HorizontalAlignment="Left"></TextBox>
+        <Button Click="AddToThemes"  Margin="10,10,0,0" Width="100" HorizontalAlignment="Left">Add new theme</Button>
+    </StackPanel>
+</Window>
